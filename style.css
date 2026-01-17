@@ -119,7 +119,16 @@ body {
     letter-spacing: 1px;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.8rem;
+}
+
+.logo-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 10px rgba(94, 255, 201, 0.3);
 }
 
 .icon-btn {
