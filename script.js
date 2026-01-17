@@ -1,907 +1,890 @@
-/**
- * NeuroGain - Brain Training Logic
- */
+/* 
+  NeuroGain - Design System 
+  Theme: Modern Dark, Neon, Glassmorphism
+*/
 
-/* --- Audio Manager --- */
-class AudioManager {
-    constructor() {
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        this.enabled = true;
-        this.speechRate = 1.0;
+:root {
+    /* Colors */
+    --bg-dark: #0a0b1e;
+    --bg-panel: rgba(20, 22, 45, 0.6);
+    --primary: #5effc9;
+    /* Neon Mint */
+    --secondary: #a37dfc;
+    /* Soft Neon Purple */
+    --accent: #ff7eb6;
+    /* Neon Pink */
+    --text-main: #ffffff;
+    --text-muted: #8b9bb4;
+    --glass-border: rgba(255, 255, 255, 0.1);
+
+    /* Effects */
+    --glow-primary: 0 0 20px rgba(94, 255, 201, 0.4);
+    --glow-text: 0 0 10px rgba(255, 255, 255, 0.5);
+
+    /* Fonts */
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Zen Maru Gothic', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    /* Allow scrolling on mobile, hidden on desktop only if needed */
+    overflow-y: auto;
+    height: 100vh;
+    height: 100dvh;
+    /* Use dynamic viewport height */
+}
+
+/* Background Animation */
+.app-container {
+    position: relative;
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ... (Existing orbs/grid lines remain same) ... */
+
+/* Main Content */
+#main-content {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    /* Changed from center to allow scrolling top-aligned content */
+    padding: 1rem;
+    overflow-y: auto;
+    /* Ensure content handles its own scroll if needed, but usually body handles it */
+}
+
+/* Screen general styles */
+.screen {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    padding-bottom: 2rem;
+    /* Add breathing room at bottom */
+    margin-top: 2rem;
+    /* Add margin top to not be covered by header on scroll */
+}
+
+/* ... */
+
+/* Mobile Optimizations for Game Area */
+@media (max-width: 600px) {
+    body {
+        height: auto;
+        /* Let body grow */
+        min-height: 100dvh;
     }
 
-    playTone(frequency, type, duration) {
-        if (!this.enabled) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = type;
-        osc.frequency.setValueAtTime(frequency, this.ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc.start();
-        osc.stop(this.ctx.currentTime + duration);
+    .main-header {
+        padding: 1rem;
     }
 
-    playDigitSound() {
-        // Soft blip
-        this.playTone(600, 'sine', 0.1);
+    .logo {
+        font-size: 1.2rem;
     }
 
-    playCorrect() {
-        // High pleasant chime
-        this.playTone(880, 'sine', 0.1);
-        setTimeout(() => this.playTone(1760, 'sine', 0.2), 100);
+    /* Game Screen Compactness */
+    #screen-game {
+        margin-top: 0;
+        justify-content: flex-start;
+        height: 100%;
     }
 
-    playWrong() {
-        // Low buzzer
-        this.playTone(150, 'sawtooth', 0.3);
+    .game-header {
+        margin-bottom: 1rem;
+        padding: 0.5rem;
     }
 
-    playConfirm() {
-        this.playTone(440, 'triangle', 0.1);
+    .stat-box .value {
+        font-size: 1.2rem;
     }
 
-    speak(text) {
-        if (!this.enabled) return new Promise(r => setTimeout(r, 1000));
-
-        return new Promise((resolve) => {
-            const uttr = new SpeechSynthesisUtterance(text);
-            uttr.lang = 'ja-JP';
-            uttr.rate = this.speechRate;
-            uttr.onend = resolve;
-            window.speechSynthesis.speak(uttr);
-        });
+    .display-area {
+        min-height: 150px;
+        /* Reduce height */
+        margin-bottom: 1rem;
     }
 
-    toggle() {
-        this.enabled = !this.enabled;
-        return this.enabled;
+    #stimulus-container {
+        font-size: 4rem;
+        /* Smaller numbers */
+    }
+
+    .answer-slots {
+        margin-bottom: 1rem;
+    }
+
+    .slot {
+        width: 30px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    /* Compact Numpad */
+    .numpad {
+        gap: 8px;
+    }
+
+    .num-btn {
+        padding: 0.8rem;
+        /* Smaller padding */
+        font-size: 1.2rem;
+        border-radius: 12px;
+    }
+
+    /* Ensure ranking list is scrollable within screen if huge */
+    .ranking-list {
+        max-height: 50vh;
+        overflow-y: auto;
     }
 }
 
-/* --- Ranking Manager --- */
-class RankingManager {
-    constructor() {
-        this.STORAGE_KEY = 'neurogain_ranking';
-        this.rankings = this.load();
+.bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    z-index: 0;
+    animation: float 20s infinite ease-in-out;
+}
+
+.orb-1 {
+    width: 300px;
+    height: 300px;
+    background: var(--primary);
+    top: -50px;
+    left: -50px;
+}
+
+.orb-2 {
+    width: 400px;
+    height: 400px;
+    background: var(--secondary);
+    bottom: -100px;
+    right: -100px;
+    animation-delay: -10s;
+}
+
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
     }
 
-    load() {
-        const data = localStorage.getItem(this.STORAGE_KEY);
-        return data ? JSON.parse(data) : { visual: [], auditory: [], scattered: [] };
-    }
-
-    save() {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.rankings));
-    }
-
-    addScore(gameType, score, name) {
-        if (!this.rankings[gameType]) this.rankings[gameType] = [];
-
-        const entry = {
-            name: name || "No Name",
-            score: score,
-            date: new Date().toLocaleDateString()
-        };
-
-        this.rankings[gameType].push(entry);
-
-        // Sort descending
-        this.rankings[gameType].sort((a, b) => b.score - a.score);
-
-        // Keep top 100
-        this.rankings[gameType] = this.rankings[gameType].slice(0, 100);
-
-        this.save();
-    }
-
-    getTopScores(gameType, limit = 5) {
-        return (this.rankings[gameType] || []).slice(0, limit);
-    }
-
-    isHighScore(gameType, score) {
-        const list = this.rankings[gameType] || [];
-        if (list.length < 5) return true; // Less than top 5, definitely in
-        return score > list[list.length - 1].score;
+    50% {
+        transform: translate(30px, 50px);
     }
 }
 
-/* --- Base Game Class --- */
-class BrainGame {
-    constructor(manager, config) {
-        this.manager = manager;
-        this.config = config; // { time: seconds, startDigits: int }
-        this.currentDigits = parseInt(config.startDigits);
-        this.score = 0;
-        this.correctCount = 0;
-        this.totalCount = 0;
-        this.history = []; // { correct: bool }
-        this.timeLeft = parseInt(config.time);
-        this.timerInterval = null;
-        this.isPlaying = false;
-        this.inputBuffer = "";
-        this.currentSequence = []; // The answer sequence
-        this.isInputMode = false;
-        this.streak = 0;
-        this.isRoundActive = false;
-        this.timeUp = false;
+/* Header */
+.main-header {
+    position: relative;
+    z-index: 10;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.icon-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    color: var(--text-main);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Main Content */
+#main-content {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.screen {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.screen.hidden {
+    display: none;
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+.screen.active {
+    display: flex;
+    /* Flex is set specific to screen type usually, but default here */
+    opacity: 1;
+    transform: scale(1);
+    animation: fadeIn 0.4s forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
     }
 
-    start() {
-        console.log("Game Started", this.config);
-        this.isPlaying = true;
-        this.updateStats();
-
-        // Start with Countdown
-        this.startCountdown().then(() => {
-            this.startTimer();
-            this.nextProblem();
-        });
-    }
-
-    startCountdown() {
-        return new Promise(resolve => {
-            const display = this.manager.elements.game.display;
-            let count = 3;
-
-            // Initial State
-            display.innerHTML = `<div class="countdown">${count}</div>`;
-            this.manager.audio.playDigitSound(); // Beep
-
-            const interval = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    display.innerHTML = `<div class="countdown">${count}</div>`;
-                    this.manager.audio.playDigitSound(); // Beep
-                } else if (count === 0) {
-                    display.innerHTML = `<div class="countdown" style="color:var(--primary)">GO!</div>`;
-                    this.manager.audio.playCorrect(); // High chime for GO
-                } else {
-                    clearInterval(interval);
-                    display.innerHTML = ''; // Clear
-                    resolve();
-                }
-            }, 1000);
-        });
-    }
-
-    startTimer() {
-        this.manager.elements.game.timer.textContent = this.formatTime(this.timeLeft);
-
-        // Reset flags
-        this.timeUp = false;
-
-        this.timerInterval = setInterval(() => {
-            this.timeLeft--;
-            if (this.timeLeft < 0) this.timeLeft = 0;
-
-            this.manager.elements.game.timer.textContent = this.formatTime(this.timeLeft);
-
-            if (this.timeLeft <= 0) {
-                // Time Up Logic
-                clearInterval(this.timerInterval);
-                this.timeUp = true;
-
-                if (this.isRoundActive) {
-                    // If currently playing a round, wait until it finishes
-                    this.manager.elements.game.timer.textContent = "ラスト問題";
-                    this.manager.elements.game.timer.style.color = "var(--accent)";
-                } else {
-                    // Not active, end immediately
-                    this.end();
-                }
-            }
-        }, 1000);
-    }
-
-    formatTime(seconds) {
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
-        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-
-    end() {
-        this.isPlaying = false;
-        clearInterval(this.timerInterval);
-
-        // Calculate final stats
-        const accuracy = this.totalCount > 0 ? Math.round((this.correctCount / this.totalCount) * 100) : 0;
-
-        // Show result screen
-        document.getElementById('result-score').textContent = this.score;
-        document.getElementById('result-max-digits').textContent = this.history.length > 0 ? Math.max(...this.history.map(h => h.digits || 3)) : this.config.startDigits;
-        document.getElementById('result-accuracy').textContent = `${accuracy}%`;
-
-        this.manager.showScreen('result');
-
-        // Check for high score
-        this.manager.checkHighScore(this.score);
-    }
-
-    updateStats() {
-        this.manager.elements.game.score.textContent = this.score;
-        this.manager.elements.game.level.textContent = `${this.currentDigits} 桁`;
-    }
-
-    nextProblem() {
-        // Reset UI for next problem
-        this.inputBuffer = "";
-        this.isInputMode = false;
-        this.isRoundActive = true; // Round Started
-
-        this.manager.elements.game.input.classList.add('hidden');
-        this.manager.elements.game.display.innerHTML = '<div id="stimulus-container"></div>'; // Reset display
-        this.updateInputUI(); // Clear slots
-
-        this.generateSequence();
-        this.presentStimulus();
-    }
-
-    generateSequence() {
-        // Default implementation: random digits
-        this.currentSequence = [];
-        for (let i = 0; i < this.currentDigits; i++) {
-            this.currentSequence.push(Math.floor(Math.random() * 10).toString());
-        }
-    }
-
-    presentStimulus() {
-        // Implementation in subclasses
-    }
-
-    enableInput() {
-        this.isInputMode = true;
-        this.manager.elements.game.input.classList.remove('hidden');
-        this.updateInputUI(true); // Create slots
-    }
-
-    handleInput(key) {
-        if (!this.isPlaying || !this.isInputMode) return;
-
-        if (key === 'clear') {
-            this.inputBuffer = "";
-            this.updateInputUI();
-            return;
-        }
-
-        if (key === 'enter') {
-            if (this.inputBuffer.length === this.currentDigits) {
-                this.checkAnswer();
-            }
-            return;
-        }
-
-        if (this.inputBuffer.length < this.currentDigits) {
-            this.inputBuffer += key;
-            this.updateInputUI();
-        }
-    }
-
-    updateInputUI(init = false) {
-        const slotsContainer = document.getElementById('answer-slots');
-
-        if (init) {
-            slotsContainer.innerHTML = '';
-            for (let i = 0; i < this.currentDigits; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'slot';
-                slotsContainer.appendChild(slot);
-            }
-        }
-
-        const slots = slotsContainer.querySelectorAll('.slot');
-        slots.forEach((slot, index) => {
-            if (index < this.inputBuffer.length) {
-                slot.textContent = this.inputBuffer[index];
-                slot.classList.add('filled');
-            } else {
-                slot.textContent = '';
-                slot.classList.remove('filled');
-            }
-            // Clear status classes
-            slot.classList.remove('correct', 'incorrect');
-        });
-    }
-
-    checkAnswer() {
-        this.isInputMode = false;
-        this.totalCount++;
-
-        // Need to calculate target answer for comparison
-        let targetAnswer = "";
-        if (this instanceof VisualReversalGame || this instanceof AuditoryReversalGame) {
-            targetAnswer = [...this.currentSequence].reverse().join('');
-        } else {
-            targetAnswer = this.currentSequence.join('');
-        }
-
-        const isCorrect = this.inputBuffer === targetAnswer;
-
-        // Detailed Visual Feedback
-        let matchCount = 0;
-        const slots = document.querySelectorAll('.slot');
-        slots.forEach((slot, i) => {
-            // Compare each digit
-            const inputDigit = this.inputBuffer[i];
-            const targetDigit = targetAnswer[i];
-
-            if (inputDigit === targetDigit) {
-                slot.classList.add('correct');
-                matchCount++;
-            } else {
-                slot.classList.add('incorrect');
-            }
-        });
-
-        // --- Score Calculation Logic ---
-        const isPerfect = (matchCount === this.currentDigits);
-
-        // 1. Base Score per Digit (Scaling with Level)
-        // Level 3: 100pt, Level 4: 150pt, Level 5: 200pt... (+50 per level)
-        const scorePerDigit = 100 + (this.currentDigits - 3) * 50;
-
-        // 2. Partial Score
-        let rawScore = matchCount * scorePerDigit;
-
-        // 3. Streak & Multipliers
-        let multiplier = 1.0;
-
-        if (isPerfect) {
-            this.streak = (this.streak || 0) + 1;
-            this.manager.audio.playCorrect();
-            this.correctCount++;
-
-            // Level Up Check
-            this.currentDigits++;
-            this.showLevelFeedback('UP');
-
-            // Perfect Bonus: x2
-            multiplier *= 2.0;
-
-            // Streak Bonus: 1.0 + (streak * 0.1)
-            // 1st perfect: 1.1x, 2nd: 1.2x ...
-            const streakBonus = 1.0 + (this.streak * 0.1);
-            multiplier *= streakBonus;
-
-        } else {
-            this.manager.audio.playWrong();
-            this.streak = 0; // Reset streak
-
-            // Show correct answer feedback
-            this.showCorrectAnswer(targetAnswer);
-
-            // Level Down Logic (Accuracy < 75%)
-            const accuracy = matchCount / this.currentDigits;
-            if (this.currentDigits > 3 && accuracy < 0.75) {
-                this.currentDigits--;
-                this.showLevelFeedback('DOWN');
-            }
-        }
-
-        // Apply Multiplier and Add to Total
-        const addedScore = Math.floor(rawScore * multiplier);
-        this.score += addedScore;
-
-        // --- Visual Feedback (Floating Score) ---
-        this.showFloatingScore(addedScore, multiplier);
-
-        this.history.push({ correct: isPerfect, digits: this.currentDigits });
-        this.updateStats();
-
-        this.isRoundActive = false; // Mark round as finished
-
-        // Delay next problem longer if incorrect to let user see feedback
-        const delay = isPerfect ? 1500 : 3500;
-
-        setTimeout(() => {
-            if (!this.isPlaying) return;
-
-            // Graceful exit: if time is up, end game now
-            if (this.timeLeft <= 0 || this.timeUp) {
-                this.end();
-            } else {
-                this.nextProblem();
-            }
-        }, delay);
-    }
-
-    showLevelFeedback(type) {
-        const container = document.getElementById('screen-game');
-        const el = document.createElement('div');
-        el.className = 'level-feedback';
-
-        let text = "";
-        let color = "";
-
-        if (type === 'UP') {
-            text = "LEVEL UP! ⇧";
-            color = "#00ffea";
-        } else if (type === 'DOWN') {
-            text = "LEVEL DOWN ⇩";
-            color = "#ff4d4d";
-        } else {
-            return;
-        }
-
-        el.textContent = text;
-        el.style.color = color;
-
-        container.appendChild(el);
-        setTimeout(() => el.remove(), 1500);
-    }
-
-    showCorrectAnswer(target) {
-        const container = document.getElementById('stimulus-container');
-        // Re-use stimulus container to show correct answer
-        container.innerHTML = `
-            <div style="font-size: 1.5rem; color: var(--text-muted); margin-bottom: 0.5rem;">正解</div>
-            <div style="font-size: 3rem; color: #4cd964; letter-spacing: 0.5rem;">${target}</div>
-        `;
-        // Ensure display is visible (it might have been cleared or covered)
-        this.manager.elements.game.display.classList.remove('hidden');
-    }
-
-    validateAnswer() {
-        // Validation moved to checkAnswer to handle per-digit feedback
-        return true;
-    }
-
-    showFloatingScore(addedScore, multiplier) {
-        if (addedScore <= 0) return;
-
-        const container = document.getElementById('screen-game');
-        const el = document.createElement('div');
-        el.className = 'floating-score';
-
-        // Randomize position slightly around center
-        const randomX = Math.random() * 40 - 20;
-        const randomY = Math.random() * 40 - 20;
-        el.style.left = `calc(50% + ${randomX}px)`;
-        el.style.top = `calc(40% + ${randomY}px)`;
-
-        let text = `+${addedScore}`;
-        if (multiplier > 1.0) {
-            text += `<span class="multiplier-text">x${multiplier.toFixed(1)}!</span>`;
-        }
-        el.innerHTML = text;
-
-        container.appendChild(el);
-
-        setTimeout(() => el.remove(), 1000);
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }
 
-/* --- Game 1: Visual Reversal --- */
-class VisualReversalGame extends BrainGame {
-    constructor(manager, config) {
-        super(manager, config);
+/* Typography */
+.hero-title {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(to right, var(--text-main), var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: var(--glow-primary);
+}
+
+.hero-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+/* Cards */
+.game-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.game-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    text-align: left;
+    width: 100%;
+}
+
+.game-card:hover {
+    transform: translateY(-2px);
+    background: rgba(40, 44, 80, 0.7);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 15px rgba(94, 255, 201, 0.1);
+    border-color: var(--primary);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.card-content h3 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    margin-bottom: 0.2rem;
+}
+
+.card-content p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    background: rgba(163, 125, 252, 0.2);
+    color: var(--secondary);
+    border: 1px solid rgba(163, 125, 252, 0.3);
+}
+
+/* Settings Panel */
+.settings-panel,
+.result-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(16px);
+    padding: 2rem;
+    border-radius: 24px;
+    width: 100%;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.setting-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.setting-group label {
+    display: block;
+    margin-bottom: 0.8rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.segmented-control {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    border-radius: 12px;
+}
+
+.segmented-control button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 0.8rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-family: var(--font-heading);
+}
+
+.segmented-control button.active {
+    background: var(--primary);
+    color: #000;
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(94, 255, 201, 0.3);
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--primary), #3bccc4);
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: transform 0.1s, filter 0.2s;
+    box-shadow: 0 5px 20px rgba(94, 255, 201, 0.3);
+}
+
+.primary-btn:active {
+    transform: scale(0.98);
+    filter: brightness(0.9);
+}
+
+.secondary-btn {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--text-main);
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Game Area */
+.game-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+}
+
+.stat-box {
+    text-align: center;
+}
+
+.stat-box .label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.stat-box .value {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.display-area {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+#stimulus-container {
+    font-size: 6rem;
+    font-weight: 700;
+    font-family: var(--font-heading);
+    color: var(--text-main);
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    min-height: 120px;
+}
+
+/* Fade in/out for numbers */
+.fade-enter {
+    animation: zoomIn 0.3s forwards;
+}
+
+.fade-exit {
+    animation: zoomOut 0.3s forwards;
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
     }
 
-    async presentStimulus() {
-        const container = document.getElementById('stimulus-container');
-        container.innerHTML = ''; // Start clean
-
-        // Wait a bit before starting sequence
-        await new Promise(r => setTimeout(r, 1000));
-
-        for (const digit of this.currentSequence) {
-            if (!this.isPlaying) return;
-
-            // Create element for digit
-            const span = document.createElement('span');
-            span.textContent = digit;
-            span.className = 'fade-enter';
-            container.appendChild(span);
-
-            this.manager.audio.playDigitSound();
-
-            // Display duration
-            await new Promise(r => setTimeout(r, 800)); // Show for 800ms
-
-            // Remove/Fade out
-            span.className = 'fade-exit';
-            await new Promise(r => setTimeout(r, 200)); // Exit anim 200ms
-            container.innerHTML = ''; // Clear for next
-            await new Promise(r => setTimeout(r, 200)); // Gap
-        }
-
-        if (this.isPlaying) {
-            this.enableInput();
-        }
-    }
-
-    validateAnswer() {
-        // Reverse check
-        const reversedBuffer = this.inputBuffer.split('').reverse().join('');
-        const target = this.currentSequence.join('');
-        // User inputs in reverse, so we compare input (as is) with reversed target? 
-        // Or user intends to type the numbers in reverse order.
-        // E.g. Display: 1, 2, 3. Target Answer: 3, 2, 1.
-        // If user types '3', '2', '1', inputBuffer is "321".
-        // currentSequence is ["1", "2", "3"].
-        // So we reverse currentSequence and compare.
-        const reversedTarget = [...this.currentSequence].reverse().join('');
-        return this.inputBuffer === reversedTarget;
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }
 
-/* --- Game 2: Auditory Reversal --- */
-class AuditoryReversalGame extends BrainGame {
-    constructor(manager, config) {
-        super(manager, config);
+@keyframes zoomOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
     }
 
-    async presentStimulus() {
-        const container = document.getElementById('stimulus-container');
-        container.innerHTML = '<span style="font-size: 3rem; color: var(--secondary);">🔊 聞いてください...</span>';
-
-        await new Promise(r => setTimeout(r, 1000));
-
-        for (const digit of this.currentSequence) {
-            if (!this.isPlaying) return;
-
-            // Visual hint (optional, user requested "listening version", so maybe hide visual?)
-            // Request said: "1つ目のゲームの聞き取り版です... 視覚情報に頼らないことで"
-            // So we do NOT show the number. Just an indicator that sound is playing.
-            container.innerHTML = '<span style="font-size: 4rem;">🔊</span>';
-            container.classList.add('pulse'); // Add some CSS pulsing if possible, or just static
-
-            await this.manager.audio.speak(digit);
-
-            // Small gap between numbers
-            container.innerHTML = '<span>...</span>';
-            await new Promise(r => setTimeout(r, 500));
-        }
-
-        if (this.isPlaying) {
-            container.innerHTML = '';
-            this.enableInput();
-        }
-    }
-
-    validateAnswer() {
-        const reversedTarget = [...this.currentSequence].reverse().join('');
-        return this.inputBuffer === reversedTarget;
+    to {
+        opacity: 0;
+        transform: scale(1.5);
     }
 }
 
-/* --- Game 3: Scattered Recall --- */
-class ScatteredGame extends BrainGame {
-    constructor(manager, config) {
-        super(manager, config);
+.pulse {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
     }
 
-    async presentStimulus() {
-        const container = document.getElementById('stimulus-container');
-        container.innerHTML = '';
-
-        // 1. Setup Grid/Boxes
-        const grid = document.createElement('div');
-        grid.className = 'scatter-grid';
-        const boxes = [];
-
-        for (let i = 0; i < this.currentDigits; i++) {
-            const box = document.createElement('div');
-            box.className = 'scatter-box';
-            box.dataset.index = i;
-            grid.appendChild(box);
-            boxes.push(box);
-        }
-        container.appendChild(grid);
-
-        await new Promise(r => setTimeout(r, 1000));
-
-        // 2. Prepare Display Order (Random)
-        // currentSequence contains the values for box 0, box 1, etc.
-        // We show them in a random temporal order.
-        let indices = Array.from({ length: this.currentDigits }, (_, i) => i);
-        // Shuffle indices
-        for (let i = indices.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [indices[i], indices[j]] = [indices[j], indices[i]];
-        }
-
-        // 3. Show them one by one
-        for (const index of indices) {
-            if (!this.isPlaying) return;
-
-            const box = boxes[index];
-            const digit = this.currentSequence[index];
-
-            box.textContent = digit;
-            this.manager.audio.playDigitSound();
-
-            await new Promise(r => setTimeout(r, 600)); // Show for short time
-
-            box.textContent = ''; // Hide
-            await new Promise(r => setTimeout(r, 200)); // Interval
-        }
-
-        if (this.isPlaying) {
-            this.enableInput();
-        }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
     }
 
-    validateAnswer() {
-        // Validate against original sequence (Left to Right)
-        return this.inputBuffer === this.currentSequence.join('');
+    100% {
+        transform: scale(1);
+        opacity: 1;
     }
 }
 
-/* --- Game Manager --- */
-class GameManager {
-    constructor() {
-        this.audio = new AudioManager();
-        this.ranking = new RankingManager(); // Add Ranking Manager
-        this.activeGame = null;
-        this.gameState = 'MENU'; // MENU, SETTINGS, PLAYING, RESULT, RANKING
-        this.selectedGameType = null;
-        this.selectedRankingType = 'visual';
+/* Scattered Game Specifics */
+.scatter-grid {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
 
-        this.elements = {
-            screens: {
-                menu: document.getElementById('screen-menu'),
-                settings: document.getElementById('screen-settings'),
-                game: document.getElementById('screen-game'),
-                result: document.getElementById('screen-result'),
-                ranking: document.getElementById('screen-ranking')
-            },
-            buttons: {
-                sound: document.getElementById('btn-sound'),
-                start: document.getElementById('btn-start-game'),
-                backToMenu: document.getElementById('btn-back-menu'),
-                retry: document.getElementById('btn-retry'),
-                home: document.getElementById('btn-home'),
-                ranking: document.getElementById('btn-show-ranking'),
-                rankingBack: document.getElementById('btn-ranking-back')
-            },
-            game: {
-                timer: document.getElementById('game-timer'),
-                score: document.getElementById('game-score'),
-                level: document.getElementById('game-level'),
-                display: document.getElementById('display-area'),
-                input: document.getElementById('input-area')
-            },
-            rankingList: document.getElementById('ranking-list')
-        };
+.scatter-box {
+    width: 60px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid var(--glass-border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: var(--primary);
+}
 
-        this.init();
+/* Input Area */
+.input-area {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.answer-slots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    min-height: 60px;
+}
+
+.slot {
+    width: 40px;
+    height: 50px;
+    border-bottom: 2px solid var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--text-main);
+}
+
+.slot.filled {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.slot.correct {
+    border-color: #4cd964;
+    color: #4cd964;
+}
+
+.slot.incorrect {
+    border-color: #ff3b30;
+    color: #ff3b30;
+}
+
+.numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.num-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    padding: 1.2rem;
+    font-size: 1.5rem;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: background 0.1s;
+    font-family: var(--font-heading);
+}
+
+.num-btn:active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.action-btn.bg-red {
+    color: #ff7eb6;
+    border-color: rgba(255, 126, 182, 0.3);
+}
+
+.action-btn.bg-green {
+    color: var(--primary);
+    border-color: rgba(94, 255, 201, 0.3);
+}
+
+/* Results */
+.final-score {
+    margin: 2rem 0;
+}
+
+.score-label {
+    display: block;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.score-value {
+    display: block;
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-shadow: 0 0 30px rgba(94, 255, 201, 0.5);
+    line-height: 1;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+    .game-cards {
+        flex-direction: row;
+        align-items: flex-start;
     }
 
-    init() {
-        this.bindEvents();
-        document.addEventListener('click', () => {
-            if (this.audio.ctx.state === 'suspended') {
-                this.audio.ctx.resume();
-            }
-        }, { once: true });
+    .card-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
     }
 
-    bindEvents() {
-        // ... (Existing events) ...
-
-        // Ranking Navigation
-        this.elements.buttons.ranking.addEventListener('click', () => {
-            this.showScreen('ranking');
-            this.updateRankingDisplay(this.selectedRankingType);
-        });
-
-        this.elements.buttons.rankingBack.addEventListener('click', () => {
-            this.showScreen('menu');
-        });
-
-        // Ranking Type Toggle
-        document.querySelectorAll('#ranking-type-select button').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const parent = e.target.parentElement;
-                parent.querySelector('.active').classList.remove('active');
-                e.target.classList.add('active');
-                this.selectedRankingType = e.target.dataset.value;
-                this.updateRankingDisplay(this.selectedRankingType);
-            });
-        });
-
-        // Menu Navigation
-        document.querySelectorAll('.game-card').forEach(card => {
-            card.addEventListener('click', () => {
-                this.selectedGameType = card.dataset.game;
-                this.showScreen('settings');
-            });
-        });
-
-        // ... (Rest of existing bindEvents) ...
-
-        // Rule Modal Logic
-        const modal = document.getElementById('rule-modal');
-        const ruleTitle = document.getElementById('rule-title');
-        const ruleText = document.getElementById('rule-text');
-        const closeRule = document.getElementById('btn-close-rule');
-
-        const rules = {
-            visual: {
-                title: "鬼逆唱 (Visual Reversal)",
-                text: "表示される数字を覚え、後ろから順番に入力してください。\n\n例：1 → 2 → 3 と表示されたら \n[3] [2] [1] と入力。\n\nレベルが上がると桁数が増え、表示が速くなります。"
-            },
-            auditory: {
-                title: "耳逆唱 (Auditory Reversal)",
-                text: "読み上げられる数字を聞き取り、後ろから順番に入力してください。\n\n例：「いち、に、さん」と聞こえたら \n[3] [2] [1] と入力。\n\n視覚情報がないため、より高い集中力が必要です。"
-            },
-            scattered: {
-                title: "鬼バラバラ (Scattered)",
-                text: "複数の枠に、バラバラな順番で数字が一瞬だけ表示されます。\n\n全ての表示が終わったら、左の枠に入っていた数字から順番に入力してください。\n\n空間的な位置と数字を同時に記憶するトレーニングです。"
-            }
-        };
-
-        document.querySelectorAll('.rule-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const gameType = btn.dataset.rule;
-                ruleTitle.textContent = rules[gameType].title;
-                ruleText.textContent = rules[gameType].text;
-                modal.classList.add('active');
-                modal.classList.remove('hidden');
-            });
-        });
-
-        closeRule.addEventListener('click', () => {
-            modal.classList.remove('active');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        });
-
-        // Settings
-        this.elements.buttons.backToMenu.addEventListener('click', () => this.showScreen('menu'));
-
-        document.querySelectorAll('.segmented-control button').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                if (e.target.closest('#ranking-type-select')) return; // handled separately
-
-                const parent = e.target.parentElement;
-                parent.querySelector('.active').classList.remove('active');
-                e.target.classList.add('active');
-                this.audio.playConfirm();
-            });
-        });
-
-        this.elements.buttons.sound.addEventListener('click', (e) => {
-            const enabled = this.audio.toggle();
-            e.target.textContent = enabled ? '🔊' : '🔇';
-            e.target.style.opacity = enabled ? '1' : '0.5';
-        });
-
-        // Start Game
-        this.elements.buttons.start.addEventListener('click', () => this.startGame());
-
-        // Keypad Interaction
-        document.querySelectorAll('.num-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (this.activeGame) {
-                    this.activeGame.handleInput(btn.dataset.key);
-                    this.audio.playConfirm();
-                }
-            });
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (!this.activeGame) return;
-            if (e.key >= '0' && e.key <= '9') this.activeGame.handleInput(e.key);
-            if (e.key === 'Backspace') this.activeGame.handleInput('clear');
-            if (e.key === 'Enter') this.activeGame.handleInput('enter');
-        });
-
-        // Bug Fix: Bind Retry and Home buttons
-        this.elements.buttons.retry.addEventListener('click', () => this.startGame());
-        this.elements.buttons.home.addEventListener('click', () => this.showScreen('menu'));
+    .game-card {
+        flex-direction: column;
+        text-align: center;
+        width: 100%;
     }
 
-    updateRankingDisplay(type) {
-        const list = this.elements.rankingList;
-        list.innerHTML = '';
-
-        const scores = this.ranking.getTopScores(type);
-
-        if (scores.length === 0) {
-            list.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-muted);">データがありません</div>';
-            return;
-        }
-
-        scores.forEach((entry, index) => {
-            const el = document.createElement('div');
-            el.className = 'ranking-item';
-
-            const rankClass = index === 0 ? 'top1' : (index === 1 ? 'top2' : (index === 2 ? 'top3' : ''));
-            const rankIcon = index === 0 ? '👑' : (index + 1);
-
-            el.innerHTML = `
-                <div class="rank-num ${rankClass}">${rankIcon}</div>
-                <div class="rank-name">${entry.name}</div>
-                <div class="rank-score">${entry.score}</div>
-                <div class="rank-date">${entry.date}</div>
-            `;
-            list.appendChild(el);
-        });
-    }
-
-    // Check High Score after game
-    checkHighScore(score) {
-        if (this.ranking.isHighScore(this.selectedGameType, score)) {
-            // Show Modal for Name Input
-            // We can reuse Rule Modal or inject a new one. Let's make a simple prompt for now
-            // Or better, inject input into result screen
-            const resultCard = document.querySelector('.result-card');
-
-            // Check if already asked
-            if (document.getElementById('highscore-input')) return;
-
-            const div = document.createElement('div');
-            div.id = 'highscore-input';
-            div.className = 'input-group';
-            div.innerHTML = `
-                <h3 style="color:#ffd700; margin-bottom:0.5rem;">🎉 High Score! 🎉</h3>
-                <input type="text" class="name-input" placeholder="名前を入力" maxlength="8">
-                <button id="btn-save-score" class="primary-btn">保存</button>
-             `;
-
-            // Insert before buttons
-            const ref = document.getElementById('btn-retry');
-            resultCard.insertBefore(div, ref);
-
-            document.getElementById('btn-save-score').addEventListener('click', () => {
-                const name = div.querySelector('input').value || "名無し";
-                this.ranking.addScore(this.selectedGameType, score, name);
-                div.remove();
-                alert("ランクインしました！");
-            });
-        }
-    }
-
-    showScreen(screenId) {
-        Object.values(this.elements.screens).forEach(s => {
-            if (!s) return;
-            s.classList.add('hidden');
-            s.classList.remove('active');
-        });
-        if (this.elements.screens[screenId]) {
-            this.elements.screens[screenId].classList.remove('hidden');
-            setTimeout(() => this.elements.screens[screenId].classList.add('active'), 10);
-        }
-        this.gameState = screenId.toUpperCase();
-    }
-
-
-    startGame() {
-        // Get settings
-        const digits = document.querySelector('#setting-digits .active').dataset.value;
-        const time = document.querySelector('#setting-time .active').dataset.value;
-        const config = { startDigits: parseInt(digits), time: parseInt(time) };
-
-        this.showScreen('game');
-
-        // Instantiate specific game
-        switch (this.selectedGameType) {
-            case 'visual':
-                this.activeGame = new VisualReversalGame(this, config);
-                break;
-            case 'auditory':
-                this.activeGame = new AuditoryReversalGame(this, config);
-                break;
-            case 'scattered':
-                this.activeGame = new ScatteredGame(this, config);
-                break;
-        }
-
-        if (this.activeGame) {
-            this.activeGame.start();
-        }
+    .card-icon {
+        margin-bottom: 1rem;
     }
 }
 
-// Start App
-window.addEventListener('DOMContentLoaded', () => {
-    window.gameApp = new GameManager();
-});
+/* Fix text color for buttons */
+button {
+    color: var(--text-main);
+}
+
+.game-card {
+    color: var(--text-main);
+    /* Ensure text is white */
+}
+
+/* Rule Button & Modal */
+.card-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+}
+
+.rule-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.rule-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-main);
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.modal.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: var(--bg-dark);
+    border: 1px solid var(--primary);
+    padding: 2rem;
+    border-radius: 20px;
+    max-width: 90%;
+    width: 400px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(94, 255, 201, 0.2);
+}
+
+.modal-content h2 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-family: var(--font-heading);
+}
+
+.modal-content p {
+    color: var(--text-main);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    text-align: left;
+    white-space: pre-wrap;
+    /* Allow newlines */
+}
+
+/* Floating Score Animation */
+.floating-score {
+    position: absolute;
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 1.5rem;
+    pointer-events: none;
+    animation: floatUp 1s ease-out forwards;
+    z-index: 100;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 0;
+        transform: translateY(0) scale(0.5);
+    }
+
+    20% {
+        opacity: 1;
+        transform: translateY(-20px) scale(1.2);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-100px) scale(1);
+    }
+}
+
+.multiplier-text {
+    font-size: 0.8em;
+    color: #ffaa00;
+    margin-left: 5px;
+}
+
+.streak-counter {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    color: var(--primary);
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.streak-counter.active {
+    opacity: 0.5;
+}
+
+.streak-counter.pulse {
+    animation: pulse-gold 0.5s ease-out;
+}
+
+@keyframes pulse-gold {
+    0% {
+        transform: scale(1);
+        text-shadow: 0 0 0 rgba(255, 215, 0, 0);
+    }
+
+    50% {
+        transform: scale(1.5);
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    }
+
+    100% {
+        transform: scale(1);
+        text-shadow: 0 0 0 rgba(255, 215, 0, 0);
+    }
+}
+
+/* Countdown Animation */
+.countdown {
+    font-size: 8rem;
+    font-weight: 800;
+    color: var(--text-main);
+    animation: countdownPulse 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    text-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes countdownPulse {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
