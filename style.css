@@ -37,17 +37,18 @@ body {
     background-color: var(--bg-dark);
     color: var(--text-main);
     font-family: var(--font-body);
-    overflow: hidden;
-    /* Prevent scroll on mobile */
-    height: 100vh;
+    /* Robust scrolling: Allow body to grow naturally */
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* Background Animation */
 .app-container {
     position: relative;
     width: 100%;
-    height: 100%;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
 }
@@ -144,8 +145,10 @@ body {
     flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     padding: 1rem;
+    /* Remove internal scroll - let body scroll */
+    overflow: visible;
 }
 
 .screen {
@@ -155,6 +158,9 @@ body {
     flex-direction: column;
     align-items: center;
     transition: opacity 0.4s ease, transform 0.4s ease;
+    padding-bottom: 4rem;
+    /* More breathing room */
+    margin-top: 1rem;
 }
 
 .screen.hidden {
@@ -780,5 +786,205 @@ button {
     100% {
         opacity: 1;
         transform: scale(1);
+    }
+}
+
+/* Ranking Screen */
+.ranking-list {
+    width: 100%;
+    max-width: 500px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 2rem 0;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ranking-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    font-family: var(--font-heading);
+}
+
+.rank-num {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-muted);
+    width: 40px;
+    text-align: center;
+}
+
+.rank-num.top1 {
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.rank-num.top2 {
+    color: #c0c0c0;
+}
+
+.rank-num.top3 {
+    color: #cd7f32;
+}
+
+.rank-name {
+    flex: 1;
+    text-align: left;
+    padding-left: 1rem;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.rank-score {
+    font-size: 1.5rem;
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.rank-date {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: right;
+    margin-right: 10px;
+}
+
+/* Name Input Modal */
+.input-group {
+    margin-bottom: 2rem;
+}
+
+.name-input {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: white;
+    font-size: 1.2rem;
+    text-align: center;
+    font-family: var(--font-body);
+}
+
+.name-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 15px rgba(94, 255, 201, 0.2);
+}
+
+/* Level Feedback */
+.level-feedback {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    font-weight: 800;
+    font-family: var(--font-heading);
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    animation: feedbackPop 1.5s ease-out forwards;
+    z-index: 200;
+    white-space: nowrap;
+}
+
+@keyframes feedbackPop {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+
+    20% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+
+    80% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+    }
+}
+
+/* Mobile Optimizations - LAST PRIORITY */
+@media (max-width: 600px) {
+    /* No special body override needed if default is robust */
+
+    .main-header {
+        padding: 0.8rem;
+    }
+
+    .logo {
+        font-size: 1rem;
+    }
+
+    /* Game Screen Compactness */
+    #screen-game {
+        margin-top: 0;
+        justify-content: flex-start;
+        /* height not restricted */
+    }
+
+    .game-header {
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .stat-box .value {
+        font-size: 1.1rem;
+    }
+
+    .display-area {
+        min-height: 120px;
+        margin-bottom: 0.5rem;
+    }
+
+    #stimulus-container {
+        font-size: 3.5rem;
+    }
+
+    .answer-slots {
+        margin-bottom: 0.5rem;
+        min-height: 40px;
+    }
+
+    .slot {
+        width: 28px;
+        height: 36px;
+        font-size: 1.1rem;
+    }
+
+    /* Compact Numpad */
+    .numpad {
+        gap: 6px;
+    }
+
+    .num-btn {
+        padding: 0.6rem;
+        font-size: 1.2rem;
+        border-radius: 10px;
+    }
+
+    /* Settings Compact */
+    .settings-panel {
+        padding: 1.5rem;
+    }
+
+    /* Ensure ranking list is scrollable */
+    .ranking-list {
+        max-height: none;
+        /* Let it grow */
     }
 }
