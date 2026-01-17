@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NeuroGain - Advanced Brain Training</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=Zen+Maru+Gothic:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Background Effects -->
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="grid-overlay"></div>
+
+        <!-- Header -->
+        <header class="main-header">
+            <div class="logo">
+                <span class="icon">👹</span> かび島教授のものすごく脳を鍛える鬼トレーニング
+            </div>
+            <div class="header-controls">
+                <button id="btn-sound" class="icon-btn" aria-label="効果音切り替え">🔊</button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content">
+            <!-- 1. Menu Screen -->
+            <section id="screen-menu" class="screen active">
+                <h1 class="hero-title">Select Training</h1>
+                <p class="hero-subtitle">トレーニングを選択してください</p>
+
+                <div class="game-cards">
+                    <div class="card-wrapper">
+                        <button class="game-card" data-game="visual">
+                            <div class="card-icon">👁️</div>
+                            <div class="card-content">
+                                <h3>鬼逆唱</h3>
+                                <p>Visual Reversal</p>
+                                <span class="tag">ワーキングメモリ</span>
+                            </div>
+                        </button>
+                        <button class="rule-btn" data-rule="visual">ルールを見る</button>
+                    </div>
+
+                    <div class="card-wrapper">
+                        <button class="game-card" data-game="auditory">
+                            <div class="card-icon">👂</div>
+                            <div class="card-content">
+                                <h3>耳逆唱</h3>
+                                <p>Auditory Reversal</p>
+                                <span class="tag">ワーキングメモリ</span>
+                            </div>
+                        </button>
+                        <button class="rule-btn" data-rule="auditory">ルールを見る</button>
+                    </div>
+
+                    <div class="card-wrapper">
+                        <button class="game-card" data-game="scattered">
+                            <div class="card-icon">🧩</div>
+                            <div class="card-content">
+                                <h3>鬼バラバラ</h3>
+                                <p>Spatial Recall</p>
+                                <span class="tag">空間記憶</span>
+                            </div>
+                        </button>
+                        <button class="rule-btn" data-rule="scattered">ルールを見る</button>
+                    </div>
+                </div>
+
+                <button id="btn-show-ranking" class="secondary-btn" style="margin-top: 2rem; max-width: 300px;">🏆
+                    ランキングを見る</button>
+            </section>
+
+            <!-- Ranking Screen -->
+            <section id="screen-ranking" class="screen hidden">
+                <h2 class="hero-title">🏆 ランキング</h2>
+
+                <div class="segmented-control" id="ranking-type-select" style="margin-bottom: 1rem;">
+                    <button class="active" data-value="visual">鬼逆唱</button>
+                    <button data-value="auditory">耳逆唱</button>
+                    <button data-value="scattered">鬼バラバラ</button>
+                </div>
+
+                <div class="ranking-list" id="ranking-list">
+                    <!-- List items will go here -->
+                </div>
+
+                <button id="btn-ranking-back" class="secondary-btn">メニューに戻る</button>
+            </section>
+
+            <!-- Rule Modal -->
+            <div id="rule-modal" class="modal hidden">
+                <div class="modal-content">
+                    <h2 id="rule-title">ルール</h2>
+                    <p id="rule-text">ここにルールが表示されます。</p>
+                    <button id="btn-close-rule" class="primary-btn">閉じる</button>
+                </div>
+            </div>
+
+            <!-- 2. Settings Screen (Modal-like) -->
+            <section id="screen-settings" class="screen hidden">
+                <div class="settings-panel">
+                    <h2>ゲーム設定</h2>
+                    <div class="setting-group">
+                        <label>開始桁数</label>
+                        <div class="segmented-control" id="setting-digits" style="flex-wrap: wrap; gap: 4px;">
+                            <button data-value="3" class="active">3</button>
+                            <button data-value="4">4</button>
+                            <button data-value="5">5</button>
+                            <button data-value="6">6</button>
+                            <button data-value="7">7</button>
+                            <button data-value="8">8</button>
+                            <button data-value="9">9</button>
+                            <button data-value="10">10</button>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <label>制限時間</label>
+                        <div class="segmented-control" id="setting-time">
+                            <button data-value="60" class="active">1分</button>
+                            <button data-value="180">3分</button>
+                            <button data-value="300">5分</button>
+                        </div>
+                    </div>
+                    <button id="btn-start-game" class="primary-btn">トレーニング開始</button>
+                    <button id="btn-back-menu" class="text-btn">メニューに戻る</button>
+                </div>
+            </section>
+
+            <!-- 3. Game Play Screen -->
+            <section id="screen-game" class="screen hidden">
+                <div class="game-header">
+                    <div class="stat-box">
+                        <span class="label">残り時間</span>
+                        <span class="value" id="game-timer">00:00</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">スコア</span>
+                        <span class="value" id="game-score">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">レベル</span>
+                        <span class="value" id="game-level">3 桁</span>
+                    </div>
+                </div>
+
+                <div class="game-area">
+                    <!-- Dynamic Content will be injected here -->
+                    <div id="display-area" class="display-area">
+                        <div id="stimulus-container"></div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div id="input-area" class="input-area hidden">
+                        <div id="answer-slots" class="answer-slots"></div>
+                        <div class="numpad">
+                            <button class="num-btn" data-key="1">1</button>
+                            <button class="num-btn" data-key="2">2</button>
+                            <button class="num-btn" data-key="3">3</button>
+                            <button class="num-btn" data-key="4">4</button>
+                            <button class="num-btn" data-key="5">5</button>
+                            <button class="num-btn" data-key="6">6</button>
+                            <button class="num-btn" data-key="7">7</button>
+                            <button class="num-btn" data-key="8">8</button>
+                            <button class="num-btn" data-key="9">9</button>
+                            <button class="num-btn action-btn bg-red" data-key="clear">✖</button>
+                            <button class="num-btn" data-key="0">0</button>
+                            <button class="num-btn action-btn bg-green" data-key="enter">✔</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Result Screen -->
+            <section id="screen-result" class="screen hidden">
+                <div class="result-card">
+                    <h2>トレーニング終了</h2>
+                    <div class="final-score">
+                        <span class="score-label">最終スコア</span>
+                        <span class="score-value" id="result-score">1250</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="label">最大桁数</span>
+                            <span class="value" id="result-max-digits">5</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">正答率</span>
+                            <span class="value" id="result-accuracy">85%</span>
+                        </div>
+                    </div>
+                    <button id="btn-retry" class="primary-btn">もう一度</button>
+                    <button id="btn-home" class="secondary-btn">メニューに戻る</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
