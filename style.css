@@ -161,6 +161,8 @@ body {
 }
 
 .screen {
+    position: relative;
+    /* For absolute positioning of children */
     width: 100%;
     max-width: 600px;
     display: flex;
@@ -170,6 +172,16 @@ body {
     padding-bottom: 4rem;
     /* More breathing room */
     margin-top: 1rem;
+}
+
+.version-label {
+    position: absolute;
+    bottom: 0;
+    right: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    opacity: 0.5;
+    font-family: var(--font-heading);
 }
 
 .screen.hidden {
@@ -476,6 +488,10 @@ body {
     display: flex;
     gap: 10px;
     justify-content: center;
+    flex-wrap: wrap;
+    /* Allow wrapping for small screens */
+    max-width: 100%;
+    padding: 0 10px;
 }
 
 .scatter-box {
@@ -489,6 +505,18 @@ body {
     justify-content: center;
     font-size: 2.5rem;
     color: var(--primary);
+}
+
+@media (max-width: 480px) {
+    .scatter-box {
+        width: 45px;
+        height: 60px;
+        font-size: 1.8rem;
+    }
+
+    .scatter-grid {
+        gap: 6px;
+    }
 }
 
 /* Input Area */

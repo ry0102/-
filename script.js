@@ -139,6 +139,12 @@ class BrainGame {
         this.isPlaying = true;
         this.updateStats();
 
+        // Reset UI State immediately
+        this.manager.elements.game.timer.textContent = this.formatTime(this.timeLeft);
+        this.manager.elements.game.timer.style.color = ''; // Reset color
+        this.manager.elements.game.input.classList.add('hidden');
+        document.getElementById('answer-slots').innerHTML = ''; // Clear previous answers
+
         // Start with Countdown
         this.startCountdown().then(() => {
             this.startTimer();
@@ -344,8 +350,8 @@ class BrainGame {
         const isPerfect = (matchCount === this.currentDigits);
 
         // 1. Base Score per Digit (Scaling with Level)
-        // Level 3: 100pt, Level 4: 150pt, Level 5: 200pt... (+50 per level)
-        const scorePerDigit = 100 + (this.currentDigits - 3) * 50;
+        // Level 3: 100pt, Level 4: 200pt, Level 5: 400pt... (Doubles every level)
+        const scorePerDigit = 100 * Math.pow(2, this.currentDigits - 3);
 
         // 2. Partial Score
         let rawScore = matchCount * scorePerDigit;
